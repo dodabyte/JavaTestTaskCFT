@@ -1,0 +1,16 @@
+**/logs/
+**/repo
+
+**/.idea
+**/.iml
+**/target
+
+**/build/
+**/gradle/
+**/.gradle/
+
+**/log/
+**/target/
+
+**/out
+**.class
