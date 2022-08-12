@@ -6,28 +6,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CommandLineArguments {
-    static List<String> files = new ArrayList<>();
+    public static List<String> files = new ArrayList<>();
 
-    void parseArguments(String[] args) {
+    public void parseArguments(String[] args) {
         Options options = new Options();
         createOptions(options);
 
         CommandLineParser parser = new DefaultParser();
-        CommandLine commands = null;
+        CommandLine commands = getCommands(parser, options, args);
 
-        checkErrors(parser, commands, options, args, files);
+        checkErrors(commands, options);
 
         if (commands != null) {
             if (commands.hasOption("h")) printHelpAndClose(options, 0);
             if (commands.hasOption("d")) Main.isAscending = false;
             if (commands.hasOption("i")) Main.isStrings = false;
+            System.out.println("Files: " + files);
             Main.outputFileName = files.get(0);
             files.remove(0);
-            Main.inputFilesName = files;
+            Main.inputFilesNames = files;
         }
     }
 
-    private void checkErrors(CommandLineParser parser, CommandLine commands, Options options, String[] args, List<String> files) {
+    private CommandLine getCommands(CommandLineParser parser, Options options, String[] args) {
+        CommandLine commands = null;
         try {
             commands = parser.parse(options, args);
         }
@@ -43,7 +45,10 @@ public class CommandLineArguments {
             System.out.println("Параметры не были найдены.");
             printHelpAndClose(options, 102);
         }
+        return commands;
+    }
 
+    private void checkErrors(CommandLine commands, Options options) {
         if (commands != null) {
             if (commands.hasOption("a") && commands.hasOption("d")) {
                 System.out.println("Конфликт параметров. Введите одну из опций: -a или -d.");
