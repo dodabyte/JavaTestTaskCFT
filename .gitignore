@@ -1,14 +1,3 @@
-**/logs/
-**/repo
-
 .idea/
-**/.iml
 
-**/build/
-**/gradle/
-**/.gradle/
-
-**/log/
-
-**/out
 **.class
