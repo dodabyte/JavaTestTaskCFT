@@ -79,8 +79,8 @@ public class SortingWithFiles {
 
         for (int index = 0; index < file.size() - 1; index++) {
             if (checkSortedDataInFile(file, index)) {
+                System.out.println("Данные в файле отсортированы неверно. Файл не будет участвовать в сортировке.");
                 while (index < file.size()) {
-                    System.out.println("Данные в файле отсортированы неверно. Строка будет удалена.");
                     file.remove(index);
                 }
                 return;
