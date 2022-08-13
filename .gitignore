@@ -9,7 +9,6 @@
 **/.gradle/
 
 **/log/
-**/target/
 
 **/out
 **.class
