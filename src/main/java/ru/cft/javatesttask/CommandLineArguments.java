@@ -21,7 +21,6 @@ public class CommandLineArguments {
             if (commands.hasOption("h")) printHelpAndClose(options, 0);
             if (commands.hasOption("d")) Main.isAscending = false;
             if (commands.hasOption("i")) Main.isStrings = false;
-            System.out.println("Files: " + files);
             Main.outputFileName = files.get(0);
             files.remove(0);
             Main.inputFilesNames = files;
@@ -34,15 +33,15 @@ public class CommandLineArguments {
             commands = parser.parse(options, args);
         }
         catch (MissingOptionException e) {
-            System.out.println("Отсутствуют обязательные параметры -i или -s.");
+            System.out.println("Отсутствуют обязательные параметры -i или -s.\n");
             printHelpAndClose(options, 100);
         }
         catch (UnrecognizedOptionException e) {
-            System.out.println("Параметр " + e.getOption() + " не существует.");
+            System.out.println("Параметр " + e.getOption() + " не существует.\n");
             printHelpAndClose(options, 101);
         }
         catch (ParseException e) {
-            System.out.println("Параметры не были найдены.");
+            System.out.println("Параметры не были найдены.\n");
             printHelpAndClose(options, 102);
         }
         return commands;
@@ -51,17 +50,17 @@ public class CommandLineArguments {
     private void checkErrors(CommandLine commands, Options options) {
         if (commands != null) {
             if (commands.hasOption("a") && commands.hasOption("d")) {
-                System.out.println("Конфликт параметров. Введите одну из опций: -a или -d.");
+                System.out.println("Конфликт параметров. Введите одну из опций: -a или -d.\n");
                 printHelpAndClose(options, 103);
             }
             if (commands.hasOption("i") && commands.hasOption("s")) {
-                System.out.println("Конфликт параметров. Введите одну из опций: -i или -s.");
+                System.out.println("Конфликт параметров. Введите одну из опций: -i или -s.\n");
                 printHelpAndClose(options, 104);
             }
 
             files = commands.getArgList();
             if (files.size() < 2) {
-                System.out.println("Отсутствует название выходного файла или входн(ого)/(ых) файлов.");
+                System.out.println("Отсутствует название выходного файла или входн(ого)/(ых) файлов.\n");
                 files.clear();
                 printHelpAndClose(options, 105);
             }

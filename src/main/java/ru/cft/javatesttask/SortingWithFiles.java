@@ -1,6 +1,8 @@
 package ru.cft.javatesttask;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -8,15 +10,15 @@ import java.util.Scanner;
 public class SortingWithFiles {
     private static String outputFile;
     private static List<String> inputFiles;
-    private static List<List<String>> dataFromFiles;
+    private static List<List<String>> filesWithData;
     private static Scanner scanner;
 
     public SortingWithFiles(String outputFileName, List<String> inputFilesNames) {
         inputFiles = new ArrayList<>();
-        dataFromFiles = new ArrayList<>();
+        filesWithData = new ArrayList<>();
         outputFile = outputFileName;
         inputFiles = fileProcessing(outputFileName, inputFilesNames);
-        dataFromFiles = readFiles(inputFiles);
+        filesWithData = readFiles(inputFiles);
     }
 
     private static List<List<String>> readFiles(List<String> files) {
@@ -26,7 +28,7 @@ public class SortingWithFiles {
 
             try {
                 FileInputStream inputStream = new FileInputStream(file);
-                scanner = new Scanner(inputStream);
+                scanner = new Scanner(inputStream, "cp1251");
             }
             catch (FileNotFoundException e) {
                 System.out.println("Не удалось найти файл.");
@@ -45,11 +47,11 @@ public class SortingWithFiles {
                 sortableDataFromFile.add(data);
             }
 
-            updatingSortedDataInFile(sortableDataFromFile, file);
+            updatingSortedDataInFile(sortableDataFromFile);
 
-            if (isSuccessfulVerification) dataFromFiles.add(sortableDataFromFile);
+            if (isSuccessfulVerification) filesWithData.add(sortableDataFromFile);
         }
-        return dataFromFiles;
+        return filesWithData;
     }
     private static boolean checkErrors(String data, String fileName) {
         if (Main.isStrings) {
@@ -72,15 +74,14 @@ public class SortingWithFiles {
         return false;
     }
 
-    private static void updatingSortedDataInFile(List<String> file, String fileName) {
+    private static void updatingSortedDataInFile(List<String> file) {
         if (file.size() < 2) return;
 
         for (int index = 0; index < file.size() - 1; index++) {
             if (checkSortedDataInFile(file, index)) {
                 while (index < file.size()) {
+                    System.out.println("Данные в файле отсортированы неверно. Строка будет удалена.");
                     file.remove(index);
-                    // TODO Удаление всех данных после косячной строки переделать в удаление одной строки и смещения всех
-                    // TODO последующих
                 }
                 return;
             }
@@ -88,26 +89,29 @@ public class SortingWithFiles {
     }
 
     private static boolean checkSortedDataInFile(List<String> file, int currentIndex) {
-        if (Main.isStrings) {
-            int numSign = file.get(currentIndex).compareTo(file.get(currentIndex + 1));
+        try {
+            if (Main.isStrings) {
+                int numSign = file.get(currentIndex).compareTo(file.get(currentIndex + 1));
 
-            if (Main.isAscending) {
-                if (numSign >= 0) return true;
-            }
-            else {
-                if (numSign < 0) return true;
+                if (Main.isAscending) {
+                    if (numSign >= 0) return true;
+                } else {
+                    if (numSign < 0) return true;
+                }
+            } else {
+                int currentValue = Integer.parseInt(file.get(currentIndex));
+                int nextValue = Integer.parseInt(file.get(currentIndex + 1));
+
+                if (Main.isAscending) {
+                    if (currentValue > nextValue) return true;
+                } else {
+                    if (currentValue < nextValue) return true;
+                }
             }
         }
-        else {
-            int currentValue = Integer.parseInt(file.get(currentIndex));
-            int nextValue = Integer.parseInt(file.get(currentIndex + 1));
-
-            if (Main.isAscending) {
-                if (currentValue > nextValue) return true;
-            }
-            else {
-                if (currentValue < nextValue) return true;
-            }
+        catch (IndexOutOfBoundsException e) {
+            System.out.println("Выход за пределы массива. Указан неверный индекс для списка с данными.");
+            System.exit(203);
         }
         return false;
     }
@@ -118,7 +122,7 @@ public class SortingWithFiles {
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             for (String data : sortedData) {
-                fileOutputStream.write(data.getBytes(), 0, data.length());
+                fileOutputStream.write(data.getBytes(Charset.forName("cp1251")), 0, data.length());
                 fileOutputStream.write("\n".getBytes());
             }
         }
@@ -135,10 +139,12 @@ public class SortingWithFiles {
 
         try {
             if (outputFile.createNewFile()) {
-                System.out.println("Файл " + outputFileName + " успешно создан.");
+                System.out.println("Файл " + outputFileName + " отсутствует в данной папке. " +
+                        "Произойдёт создание нового файла.");
             }
             else {
-                System.out.println("Файл " + outputFileName + " уже существует.");
+                System.out.println("Файл " + outputFileName + " уже существует. " +
+                        "Запись произойдёт в данный файл.");
 
                 if (!outputFile.canWrite()) {
                     System.out.println("Доступ к записи в файл " + outputFileName + " ограничен.");
@@ -189,13 +195,13 @@ public class SortingWithFiles {
     }
 
     public void mergeSorting() {
-        while (dataFromFiles.size() > 1) {
-            int sizeDataFromFiles = dataFromFiles.size();
+        while (filesWithData.size() > 1) {
+            int sizeDataFromFiles = filesWithData.size();
             List<String> tempData = new ArrayList<>();
 
-            while (dataFromFiles.get(sizeDataFromFiles - 1).size() > 0 && dataFromFiles.get(sizeDataFromFiles - 2).size() > 0) {
-                String value1 = dataFromFiles.get(sizeDataFromFiles - 1).get(0);
-                String value2 = dataFromFiles.get(sizeDataFromFiles - 2).get(0);
+            while (filesWithData.get(sizeDataFromFiles - 1).size() > 0 && filesWithData.get(sizeDataFromFiles - 2).size() > 0) {
+                String value1 = filesWithData.get(sizeDataFromFiles - 1).get(0);
+                String value2 = filesWithData.get(sizeDataFromFiles - 2).get(0);
 
                 if (Main.isStrings) {
                     int numSign = value1.compareTo(value2);
@@ -203,21 +209,21 @@ public class SortingWithFiles {
                     if (Main.isAscending) {
                         if (numSign <= 0) {
                             tempData.add(value1);
-                            dataFromFiles.get(sizeDataFromFiles - 1).remove(0);
+                            filesWithData.get(sizeDataFromFiles - 1).remove(0);
                         }
                         else {
                             tempData.add(value2);
-                            dataFromFiles.get(sizeDataFromFiles - 2).remove(0);
+                            filesWithData.get(sizeDataFromFiles - 2).remove(0);
                         }
                     }
                     else {
                         if (numSign >= 0) {
                             tempData.add(value1);
-                            dataFromFiles.get(sizeDataFromFiles - 1).remove(0);
+                            filesWithData.get(sizeDataFromFiles - 1).remove(0);
                         }
                         else {
                             tempData.add(value2);
-                            dataFromFiles.get(sizeDataFromFiles - 2).remove(0);
+                            filesWithData.get(sizeDataFromFiles - 2).remove(0);
                         }
                     }
                 }
@@ -228,40 +234,42 @@ public class SortingWithFiles {
                     if (Main.isAscending) {
                         if (number1 <= number2) {
                             tempData.add(value1);
-                            dataFromFiles.get(sizeDataFromFiles - 1).remove(0);
+                            filesWithData.get(sizeDataFromFiles - 1).remove(0);
                         }
                         else {
                             tempData.add(value2);
-                            dataFromFiles.get(sizeDataFromFiles - 2).remove(0);
+                            filesWithData.get(sizeDataFromFiles - 2).remove(0);
                         }
                     }
                     else {
                         if (number1 >= number2) {
                             tempData.add(value1);
-                            dataFromFiles.get(sizeDataFromFiles - 1).remove(0);
+                            filesWithData.get(sizeDataFromFiles - 1).remove(0);
                         }
                         else {
                             tempData.add(value2);
-                            dataFromFiles.get(sizeDataFromFiles - 2).remove(0);
+                            filesWithData.get(sizeDataFromFiles - 2).remove(0);
                         }
                     }
                 }
             }
 
-            while (dataFromFiles.get(sizeDataFromFiles - 1).size() > 0) {
-                tempData.add(dataFromFiles.get(sizeDataFromFiles - 1).get(0));
-                dataFromFiles.get(sizeDataFromFiles - 1).remove(0);
+            while (filesWithData.get(sizeDataFromFiles - 1).size() > 0) {
+                tempData.add(filesWithData.get(sizeDataFromFiles - 1).get(0));
+                filesWithData.get(sizeDataFromFiles - 1).remove(0);
             }
 
-            while (dataFromFiles.get(sizeDataFromFiles - 2).size() > 0) {
-                tempData.add(dataFromFiles.get(sizeDataFromFiles - 2).get(0));
-                dataFromFiles.get(sizeDataFromFiles - 2).remove(0);
+            while (filesWithData.get(sizeDataFromFiles - 2).size() > 0) {
+                tempData.add(filesWithData.get(sizeDataFromFiles - 2).get(0));
+                filesWithData.get(sizeDataFromFiles - 2).remove(0);
             }
 
-            dataFromFiles.set(sizeDataFromFiles - 2, tempData);
-            dataFromFiles.remove(sizeDataFromFiles - 1);
+            filesWithData.set(sizeDataFromFiles - 2, tempData);
+            filesWithData.remove(sizeDataFromFiles - 1);
         }
 
-        writeFile(dataFromFiles.get(0), outputFile);
+        writeFile(filesWithData.get(0), outputFile);
+
+        System.out.println("Сортировка слиянием произведена успешно.");
     }
 }
